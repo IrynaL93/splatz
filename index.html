@@ -946,7 +946,7 @@ input[type="file"][data-v-5739d392] { display: none; }
   <div class="demo-card" role="dialog" aria-modal="true" aria-labelledby="demoTitle">
     <button type="button" class="demo-close" id="demoClose" aria-label="Закрити">×</button>
     <h2 id="demoTitle">Оформлення замовлення</h2>
-    <p class="demo-sub">Оберіть кількість упаковок</p>
+    <p class="demo-sub"><strong>Чим більше упаковок — тим більша знижка!</strong><br>Оберіть кількість упаковок</p>
     <div class="demo-product"><b>SPALSADZ — 1 кг</b><span>200 грн / упаковка</span></div>
     <div class="demo-label">Кількість упаковок</div>
     <div class="demo-qty">
@@ -971,7 +971,7 @@ input[type="file"][data-v-5739d392] { display: none; }
   let q=2; const price=200;
   const modal=document.getElementById('demoOrderModal');
   const $=id=>document.getElementById(id);
-  const discount=n=>n>10?20:n>=5?16:n>=3?8:0;
+  const discount=n=>n>=10?20:n>=5?16:n>=3?8:0;
   function render(){
     const d=discount(q),base=q*price,save=Math.round(base*d/100),total=base-save;
     $('demoQty').textContent=q;$('demoKg').textContent=q+' кг';$('demoDiscount').textContent=d+'%';
