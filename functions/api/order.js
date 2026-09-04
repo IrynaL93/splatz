@@ -26,7 +26,7 @@ export async function onRequestPost(context) {
 
     if (!apiKey) return json({ error: 'LPCRM_API_KEY is not configured' }, 500);
 
-    // LP-CRM expects the products array in PHP serialized format.
+    // LP-CRM expects products as a PHP-serialized array.
     const phpSerialize = (value) => {
       if (Array.isArray(value)) {
         let out = `a:${value.length}:{`;
@@ -36,14 +36,19 @@ export async function onRequestPost(context) {
       if (value && typeof value === 'object') {
         const keys = Object.keys(value);
         let out = `a:${keys.length}:{`;
-        keys.forEach((key) => { out += `s:${key.length}:\"${key}\";${phpSerialize(value[key])}`; });
+        keys.forEach((key) => { out += `s:${key.length}:"${key}";${phpSerialize(value[key])}`; });
         return out + '}';
       }
-      if (typeof value === 'string') return `s:${value.length}:\"${value}\";`;
+      if (typeof value === 'string') return `s:${value.length}:"${value}";`;
       if (Number.isInteger(value)) return `i:${value};`;
-      return `s:0:\"\";`;
+      return 's:0:"";';
     };
-    const productsList = [{ product_id: String(productId), count: String(quantity) }];
+
+    const productsList = [{
+      product_id: String(productId),
+      price: String(total),
+      count: String(quantity)
+    }];
     const products = phpSerialize(productsList);
     const orderId = String(Math.floor(Date.now() / 100));
     const comment = `SPALSADZ | ${quantity} уп. | Знижка ${discount}% | Економія ${saving} грн | До сплати ${total} грн | Оплата: ${payment}`;
@@ -58,26 +63,49 @@ export async function onRequestPost(context) {
     form.set('phone', phone);
     form.set('email', email);
     form.set('comment', comment);
-    form.set('payment', payment);
     form.set('delivery', '');
     form.set('delivery_adress', '');
+    form.set('payment', '');
     form.set('additional_1', String(quantity));
     form.set('additional_2', String(discount));
     form.set('additional_3', String(total));
     form.set('additional_4', payment);
 
-    const crmResponse = await fetch(`https://${subdomain}.lp-crm.biz/api/addNewOrder.html`, {
+    const url = `http://${subdomain}.lp-crm.biz/api/addNewOrder.html`;
+    console.log('LPCRM request', JSON.stringify({
+      url,
+      orderId,
+      productId: String(productId),
+      quantity,
+      total,
+      payment,
+      products
+    }));
+
+    const crmResponse = await fetch(url, {
       method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded'
+      },
       body: form.toString()
     });
 
     const crmText = await crmResponse.text();
-    if (!crmResponse.ok) return json({ error: 'LP-CRM request failed' }, 502);
+    console.log('LPCRM response', JSON.stringify({
+      status: crmResponse.status,
+      ok: crmResponse.ok,
+      body: crmText.slice(0, 2000)
+    }));
 
-    return json({ ok: true, order_id: orderId, crm: crmText });
+    return json({
+      ok: crmResponse.ok,
+      order_id: orderId,
+      crm_status: crmResponse.status,
+      crm_response: crmText.slice(0, 2000)
+    }, crmResponse.ok ? 200 : 502);
   } catch (error) {
-    return json({ error: 'Invalid request' }, 400);
+    console.log('Order function error', error?.stack || String(error));
+    return json({ error: String(error?.message || error) }, 500);
   }
 }
 
