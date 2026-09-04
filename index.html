@@ -951,13 +951,13 @@ input[type="file"][data-v-5739d392] { display: none; }
     <div class="demo-label">Кількість упаковок</div>
     <div class="demo-qty">
       <button type="button" id="demoMinus" aria-label="Зменшити">−</button>
-      <div class="demo-qval"><span class="demo-qnum" id="demoQty">2</span><span class="demo-qkg" id="demoKg">2 кг</span></div>
+      <div class="demo-qval"><span class="demo-qnum" id="demoQty">1</span><span class="demo-qkg" id="demoKg">1 кг</span></div>
       <button type="button" id="demoPlus" aria-label="Збільшити">+</button>
     </div>
     <div class="demo-discount"><small>Ваша знижка</small><b id="demoDiscount">0%</b></div>
-    <div class="demo-row"><span>Звичайна ціна:</span><span class="demo-old" id="demoBase">400 грн</span></div>
+    <div class="demo-row"><span>Звичайна ціна:</span><span class="demo-old" id="demoBase">200 грн</span></div>
     <div class="demo-row"><span>Економія:</span><span id="demoSaving">0 грн</span></div>
-    <div class="demo-total"><span>До сплати:</span><strong id="demoTotal">400 грн</strong></div>
+    <div class="demo-total"><span>До сплати:</span><strong id="demoTotal">200 грн</strong></div>
     <div class="demo-pay-title">Оберіть спосіб оплати:</div>
     <label class="demo-pay-option"><input type="radio" name="demoPayment" value="online" checked><span>Онлайн-оплата</span></label>
     <label class="demo-pay-option"><input type="radio" name="demoPayment" value="cod"><span>Оплата при отриманні</span></label>
@@ -968,7 +968,7 @@ input[type="file"][data-v-5739d392] { display: none; }
 <script>
 (function(){
   if(window.__spalsadzDemoInit)return; window.__spalsadzDemoInit=true;
-  let q=2; const price=200;
+  let q=1; const price=200;
   const modal=document.getElementById('demoOrderModal');
   const $=id=>document.getElementById(id);
   const discount=n=>n>=10?20:n>=5?16:n>=3?8:0;
@@ -978,7 +978,7 @@ input[type="file"][data-v-5739d392] { display: none; }
     $('demoBase').textContent=base+' грн';$('demoSaving').textContent=save+' грн';$('demoTotal').textContent=total+' грн';
     $('demoResult').style.display='none';
   }
-  function open(){modal.classList.add('open');modal.setAttribute('aria-hidden','false');render()}
+  function open(){q=1;modal.classList.add('open');modal.setAttribute('aria-hidden','false');render()}
   function close(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
   document.querySelectorAll('button').forEach(b=>{
     const t=(b.textContent||'').trim().toLowerCase();
