@@ -906,7 +906,7 @@ input[type="file"][data-v-5739d392] { display: none; }
 .spalsadz-payment-acceptance{max-width:460px;margin:18px auto 8px;padding:14px 18px;text-align:center;font-family:Arial,sans-serif;}
 .spalsadz-payment-title{font-size:16px;font-weight:700;color:#333;margin-bottom:10px;}
 .spalsadz-payment-logos{display:flex;justify-content:center;align-items:center;gap:18px;}
-.spalsadz-payment-logos img{height:34px;width:auto;display:block;object-fit:contain;}
+.spalsadz-payment-logos img{height:34px;width:auto;display:block;object-fit:contain}.spalsadz-payment-logos img:first-child{width:104px}.spalsadz-payment-logos img:nth-child(2){width:104px}
 @media(max-width:500px){.spalsadz-payment-acceptance{padding:12px 10px;margin-top:14px}.spalsadz-payment-title{font-size:15px}.spalsadz-payment-logos{gap:14px}.spalsadz-payment-logos img{height:30px;}}
 </style>
 </head>
@@ -920,8 +920,8 @@ input[type="file"][data-v-5739d392] { display: none; }
         </strong></div></div> <!-- --> <!-- --></div><div class="lp-block-slot" data-v-aad5d3e0=""><div class="kyFbU1TgjWduHs-i8Xjuzw==" currency="грн" data-v-aad5d3e0="" price="200"><div class="+qrSlAWWAPm8jKr+H9Fozg=="><div class="Pn8baU+6diu8jA7WUP3ecg=="></div> <p data-v-1f27174b=""><strong>Захист<br/>покупця</strong></p></div> <p data-v-1f27174b="">Залишилося<br/>по акції 1<strong>7 шт.</strong></p></div> <!-- --> <!-- --></div><div class="lp-block-slot" data-v-aad5d3e0=""><div class="_6V7NMzj9Sb9wk09xmnNwZg==" currency="грн" data-v-aad5d3e0="" price="200"><form action="https://spalsadz-profi.in.ua/" class="JjE0YHIHUGX0qoT8KUw3EQ==" id="317177729_form" method="POST"> <p data-v-1f27174b=""><strong>Залиште заявку</strong></p> <div style="margin-top: 30px;"><p data-v-1f27174b="">Вкажіть ваше ім’я та номер телефону, натисніть «Замовити зі знижкою» — менеджер зателефонує та підтвердить замовлення.</p></div> <div class="P2GOykbxsGosu+4GB5VL3w=="><input class="do0RlzweO3JfbtSHTQsUzA==" name="name" placeholder="Введіть ваше ПІБ" required="required" type="text"/> <input class="do0RlzweO3JfbtSHTQsUzA==" name="phone" placeholder="Введіть телефон" required="required" type="text"/></div></form> <div class="hnBm9OeRcMbw-UBv+led6g=="><button class="_4nk2bJcECysIGudWXAqYzw==" form="317177729_form" type="submit"><p data-v-1f27174b=""><strong>КУПИТИ ЗІ ЗНИЖКОЮ</strong></p></button></div></div> <!-- --> <!-- --></div><div class="spalsadz-payment-acceptance" aria-label="Підтримувані платіжні системи">
   <div class="spalsadz-payment-title">Безпечна онлайн-оплата</div>
   <div class="spalsadz-payment-logos">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" loading="lazy">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" loading="lazy">
+    <img src="visa.svg" alt="Visa" loading="lazy">
+    <img src="mastercard.svg" alt="Mastercard" loading="lazy">
   </div>
 </div>
 <div class="lp-block-slot" data-v-aad5d3e0=""><div class="eN7zujS3iE99AAIWtEtbQA==" data-v-aad5d3e0=""><p><a href="/privacy-policy.html">Політика конфіденційності</a></p> <p><a href="/terms-of-use.html">Угода користувача</a></p></div> <!-- --> <!-- --></div></div></div>
@@ -954,9 +954,15 @@ input[type="file"][data-v-5739d392] { display: none; }
 #demoOrderModal .demo-pay-option input{accent-color:#222}
 #demoOrderModal .demo-pay-option:has(input:checked){border-color:#222;background:#f7f7f7}
 #demoOrderModal .demo-card-brands{display:flex;align-items:center;gap:8px;margin:-2px 0 12px 30px}
-#demoOrderModal .demo-card-brand{height:26px;width:auto;display:block}
+#demoOrderModal .demo-card-brand{height:26px;width:104px;display:block;object-fit:contain} 
 #demoOrderModal .demo-confirm{width:100%;margin-top:14px;padding:16px;border:0;border-radius:10px;background:#222;color:#fff;font-size:17px;font-weight:700;cursor:pointer}
 #demoOrderModal .demo-result{display:none;margin-top:14px;padding:13px;border-radius:10px;background:#f3f3f3;line-height:1.5;font-size:14px}
+#demoOrderModal .demo-customer-fields{margin-top:18px}
+#demoOrderModal .demo-field{display:block;margin:10px 0}
+#demoOrderModal .demo-field span{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+#demoOrderModal .demo-field input{width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:10px;padding:13px 14px;font:inherit;background:#fff}
+#demoOrderModal .demo-field input:focus{outline:2px solid rgba(0,0,0,.12);outline-offset:1px}
+#demoOrderModal .demo-field input.invalid{border-color:#b00020}
 @media(max-width:500px){#demoOrderModal .demo-card{padding:24px 18px;border-radius:16px}#demoOrderModal h2{font-size:23px}}
 </style>
 <div id="demoOrderModal" aria-hidden="true">
@@ -975,9 +981,15 @@ input[type="file"][data-v-5739d392] { display: none; }
     <div class="demo-row"><span>Звичайна ціна:</span><span class="demo-old" id="demoBase">200 грн</span></div>
     <div class="demo-row"><span>Економія:</span><span id="demoSaving">0 грн</span></div>
     <div class="demo-total"><span>До сплати:</span><strong id="demoTotal">200 грн</strong></div>
+    <div class="demo-customer-fields">
+      <div class="demo-pay-title">Ваші дані:</div>
+      <label class="demo-field"><span>Ім'я</span><input id="demoName" type="text" autocomplete="name" placeholder="Ваше ім'я"></label>
+      <label class="demo-field"><span>Телефон</span><input id="demoPhone" type="tel" autocomplete="tel" placeholder="+38 (___) ___-__-__"></label>
+      <label class="demo-field"><span>E-mail</span><input id="demoEmail" type="email" autocomplete="email" placeholder="name@example.com"></label>
+    </div>
     <div class="demo-pay-title">Оберіть спосіб оплати:</div>
     <label class="demo-pay-option"><input type="radio" name="demoPayment" value="online" checked><span>Онлайн-оплата</span></label>
-    <div class="demo-card-brands" aria-label="Підтримувані платіжні системи"><img class="demo-card-brand" src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa"><img class="demo-card-brand" src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard"></div>
+    <div class="demo-card-brands" aria-label="Підтримувані платіжні системи"><img class="demo-card-brand" src="visa.svg" alt="Visa"><img class="demo-card-brand" src="mastercard.svg" alt="Mastercard"></div>
     <label class="demo-pay-option"><input type="radio" name="demoPayment" value="cod"><span>Оплата при отриманні</span></label>
     <button type="button" class="demo-confirm" id="demoConfirm">Підтвердити замовлення</button>
     <div class="demo-result" id="demoResult" aria-live="polite"></div>
@@ -1007,12 +1019,29 @@ input[type="file"][data-v-5739d392] { display: none; }
   $('demoMinus').addEventListener('click',()=>{if(q>1){q--;render()}});
   $('demoClose').addEventListener('click',close);
   modal.addEventListener('click',e=>{if(e.target===modal)close()});
-  $('demoConfirm').addEventListener('click',()=>{
+  $('demoConfirm').addEventListener('click',async()=>{
+    const name=$('demoName').value.trim(), phone=$('demoPhone').value.trim(), email=$('demoEmail').value.trim();
+    [$('demoName'),$('demoPhone'),$('demoEmail')].forEach(el=>el.classList.remove('invalid'));
+    let ok=true;
+    if(!name){$('demoName').classList.add('invalid');ok=false}
+    if(!phone){$('demoPhone').classList.add('invalid');ok=false}
+    if(!ok){$('demoResult').style.display='block';$('demoResult').textContent='Будь ласка, заповніть ім’я та телефон.';return}
     const payment=document.querySelector('input[name="demoPayment"]:checked').value;
     const paymentText=payment==='online'?'Онлайн-оплата':'Оплата при отриманні';
-    const d=discount(q),base=q*price,total=base-Math.round(base*d/100);
-    const r=$('demoResult'); r.style.display='block';
-    r.innerHTML='<strong>Замовлення сформовано</strong><br>Кількість: '+q+' упаковок ('+q+' кг)<br>Знижка: '+d+'%<br>Сума: <strong>'+total+' грн</strong><br>Спосіб оплати: '+paymentText+(payment==='online'?'<br><small>У реальній версії тут буде перехід на платіжну сторінку ФОП.</small>':'');
+    const d=discount(q),base=q*price,save=Math.round(base*d/100),total=base-save;
+    const btn=$('demoConfirm'); btn.disabled=true; btn.textContent='Надсилаємо замовлення…';
+    try{
+      const res=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,email,quantity:q,discount:d,baseTotal:base,saving:save,total,payment})});
+      const data=await res.json().catch(()=>({}));
+      const r=$('demoResult'); r.style.display='block';
+      if(!res.ok) throw new Error(data.error||'Не вдалося передати замовлення');
+      r.innerHTML='<strong>Дякуємо! Замовлення прийнято.</strong><br>Кількість: '+q+' упаковок ('+q+' кг)<br>Знижка: '+d+'%<br>Сума: <strong>'+total+' грн</strong><br>Спосіб оплати: '+paymentText;
+      btn.textContent='Замовлення прийнято';
+    }catch(err){
+      const r=$('demoResult'); r.style.display='block'; r.textContent='Не вдалося передати замовлення. Спробуйте ще раз.';
+      btn.disabled=false; btn.textContent='Підтвердити замовлення';
+      console.error(err);
+    }
   });
   render();
 })();
