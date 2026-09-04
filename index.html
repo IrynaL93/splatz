@@ -986,7 +986,7 @@ input[type="file"][data-v-5739d392] { display: none; }
   });
   document.querySelectorAll('form').forEach(f=>f.addEventListener('submit',e=>e.preventDefault()));
   $('demoPlus').addEventListener('click',()=>{q++;render()});
-  $('demoMinus').addEventListener('click',()=>{if(q>2){q--;render()}});
+  $('demoMinus').addEventListener('click',()=>{if(q>1){q--;render()}});
   $('demoClose').addEventListener('click',close);
   modal.addEventListener('click',e=>{if(e.target===modal)close()});
   $('demoConfirm').addEventListener('click',()=>{
