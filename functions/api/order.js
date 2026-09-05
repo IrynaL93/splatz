@@ -57,13 +57,15 @@ export async function onRequestPost(context) {
     const products = encodeURIComponent(phpSerialize(productsList));
 
     // Approximation of PHP's serialized $_SERVER for the sender field.
-    const senderArray = {
-      REQUEST_URI: new URL(context.request.url).pathname,
-      HTTP_HOST: context.request.headers.get('host') || '',
-      HTTP_USER_AGENT: context.request.headers.get('user-agent') || '',
-      REMOTE_ADDR: context.request.headers.get('cf-connecting-ip') || ''
-    };
-    const sender = encodeURIComponent(phpSerialize(senderArray));
+   const senderArray = {
+  SERVER_NAME: new URL(context.request.url).hostname,
+  REMOTE_ADDR:
+    context.request.headers.get('cf-connecting-ip') ||
+    context.request.headers.get('x-forwarded-for') ||
+    ''
+};
+
+const sender = encodeURIComponent(phpSerialize(senderArray));
 
     const orderId = `${Date.now()}${Math.floor(10000 + Math.random() * 90000)}`;
 
