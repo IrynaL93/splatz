@@ -1008,18 +1008,24 @@ input[type="file"][data-v-5739d392] { display: none; }
     $('demoBase').textContent=base+' грн';$('demoSaving').textContent=save+' грн';$('demoTotal').textContent=total+' грн';
     $('demoResult').style.display='none';
   }
-  const firstName=document.querySelector('#modular form input[name="name"]');
-  const firstPhone=document.querySelector('#modular form input[name="phone"]');
-  function open(){
+  function open(sourceButton){
     q=1;
-    $('demoName').value=firstName?.value?.trim()||'';
-    $('demoPhone').value=firstPhone?.value?.trim()||'';
+
+    // Беремо дані саме з тієї форми, до якої прив'язана натиснута кнопка.
+    // На сторінці кілька однакових форм, тому брати першу форму ненадійно.
+    const formId=sourceButton?.getAttribute('form');
+    const sourceForm=sourceButton?.form || (formId ? document.getElementById(formId) : null);
+    const sourceName=sourceForm?.querySelector('input[name="name"]');
+    const sourcePhone=sourceForm?.querySelector('input[name="phone"]');
+
+    $('demoName').value=sourceName?.value?.trim()||'';
+    $('demoPhone').value=sourcePhone?.value?.trim()||'';
     modal.classList.add('open');modal.setAttribute('aria-hidden','false');render()
   }
   function close(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
   document.querySelectorAll('button').forEach(b=>{
     const t=(b.textContent||'').trim().toLowerCase();
-    if(t.includes('купити')||t.includes('замовити')) b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();open()});
+    if(t.includes('купити')||t.includes('замовити')) b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();open(this)});
   });
   document.querySelectorAll('form').forEach(f=>f.addEventListener('submit',e=>e.preventDefault()));
   $('demoPlus').addEventListener('click',()=>{q++;render()});
