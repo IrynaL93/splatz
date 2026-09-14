@@ -1080,6 +1080,15 @@ input[type="file"][data-v-5739d392] { display: none; }
           throw new Error('NovaPay створив платіж, але URL оплати не знайдено');
         }
 
+        // Зберігаємо дані сесії перед переходом на NovaPay.
+        // Вони потрібні після повернення на ?payment=success,
+        // щоб автоматично перевірити статус і синхронізувати оплату з LP-CRM.
+        sessionStorage.setItem('spalsadz_novapay_order', JSON.stringify({
+          sessionId: payData.sessionId,
+          orderId: payData.orderId || '',
+          quantity: q
+        }));
+
         window.location.href=paymentUrl;
         return;
       }
@@ -1099,7 +1108,62 @@ input[type="file"][data-v-5739d392] { display: none; }
       console.error(err);
     }
   });
+  async function syncNovaPayAfterReturn(){
+    const params=new URLSearchParams(window.location.search);
+    const paymentResult=params.get('payment');
+
+    if(paymentResult!=='success' && paymentResult!=='fail') return;
+
+    if(paymentResult==='fail'){
+      sessionStorage.removeItem('spalsadz_novapay_order');
+      return;
+    }
+
+    let savedOrder=null;
+
+    try{
+      savedOrder=JSON.parse(
+        sessionStorage.getItem('spalsadz_novapay_order')||'null'
+      );
+    }catch(e){
+      console.error('NovaPay session storage error:',e);
+    }
+
+    if(!savedOrder?.sessionId){
+      console.error('NovaPay: sessionId не знайдено після повернення з оплати');
+      return;
+    }
+
+    try{
+      const statusRes=await fetch('/api/novapay/status',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          session_id:savedOrder.sessionId,
+          quantity:Number(savedOrder.quantity||1)
+        })
+      });
+
+      const statusData=await statusRes.json().catch(()=>({}));
+      console.log('NovaPay status after return:',statusData);
+
+      if(!statusRes.ok || statusData.success!==true){
+        throw new Error(
+          statusData.error||
+          'Не вдалося перевірити статус оплати NovaPay'
+        );
+      }
+
+      if(statusData.paid===true && statusData.syncedToCrm===true){
+        sessionStorage.removeItem('spalsadz_novapay_order');
+      }
+    }catch(err){
+      console.error('NovaPay status sync error:',err);
+    }
+  }
+
   render();
+  syncNovaPayAfterReturn();
 })();
 </script>
 </body></html>
