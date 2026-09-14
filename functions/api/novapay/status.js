@@ -1,5 +1,5 @@
 function pemToArrayBuffer(pem) {
-  const base64 = pem
+  const base64 = String(pem || '')
     .replace(/-----BEGIN PRIVATE KEY-----/g, '')
     .replace(/-----END PRIVATE KEY-----/g, '')
     .replace(/\s+/g, '');
@@ -14,58 +14,103 @@ function pemToArrayBuffer(pem) {
   return bytes.buffer;
 }
 
-async function createSignature(body, privateKeyPem) {
-  const keyData = pemToArrayBuffer(privateKeyPem);
+async function createSignature(
+  body,
+  privateKeyPem
+) {
+  const keyData =
+    pemToArrayBuffer(privateKeyPem);
 
-  const privateKey = await crypto.subtle.importKey(
-    'pkcs8',
-    keyData,
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: 'SHA-256'
-    },
-    false,
-    ['sign']
-  );
+  const privateKey =
+    await crypto.subtle.importKey(
+      'pkcs8',
+      keyData,
+      {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: 'SHA-256'
+      },
+      false,
+      ['sign']
+    );
 
-  const encoded = new TextEncoder().encode(body);
+  const encoded =
+    new TextEncoder().encode(body);
 
-  const signature = await crypto.subtle.sign(
-    'RSASSA-PKCS1-v1_5',
-    privateKey,
-    encoded
-  );
+  const signature =
+    await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5',
+      privateKey,
+      encoded
+    );
 
-  const bytes = new Uint8Array(signature);
+  const bytes =
+    new Uint8Array(signature);
 
   let binary = '';
 
   for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
+    binary +=
+      String.fromCharCode(byte);
   }
 
   return btoa(binary);
 }
 
 function getDiscount(quantity) {
-  if (quantity >= 10) return 20;
-  if (quantity >= 5) return 16;
-  if (quantity >= 3) return 8;
+  if (quantity >= 10) {
+    return 20;
+  }
+
+  if (quantity >= 5) {
+    return 16;
+  }
+
+  if (quantity >= 3) {
+    return 8;
+  }
+
   return 0;
+}
+
+function json(
+  data,
+  status = 200
+) {
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+      headers: {
+        'Content-Type':
+          'application/json; charset=utf-8'
+      }
+    }
+  );
 }
 
 export async function onRequestPost(context) {
   try {
-    const env = context.env;
+    const env =
+      context.env;
+
+    // -------------------------
+    // ENV
+    // -------------------------
 
     const MERCHANT_ID =
-      String(env.NOVAPAY_MERCHANT_ID || '');
+      String(
+        env.NOVAPAY_MERCHANT_ID || ''
+      ).trim();
 
     const PRIVATE_KEY =
-      String(env.NOVAPAY_PRIVATE_KEY || '');
+      String(
+        env.NOVAPAY_PRIVATE_KEY || ''
+      ).trim();
 
     const NOVAPAY_ENV =
-      String(env.NOVAPAY_ENV || 'test');
+      String(
+        env.NOVAPAY_ENV || ''
+      ).trim();
 
     if (!MERCHANT_ID) {
       throw new Error(
@@ -78,6 +123,23 @@ export async function onRequestPost(context) {
         'NOVAPAY_PRIVATE_KEY is missing'
       );
     }
+
+    /*
+     * Не дозволяємо production
+     * мовчки перейти в sandbox.
+     */
+    if (
+      NOVAPAY_ENV !== 'production' &&
+      NOVAPAY_ENV !== 'test'
+    ) {
+      throw new Error(
+        'NOVAPAY_ENV must be "production" or "test"'
+      );
+    }
+
+    // -------------------------
+    // REQUEST
+    // -------------------------
 
     const requestData =
       await context.request.json();
@@ -93,32 +155,46 @@ export async function onRequestPost(context) {
       return json(
         {
           success: false,
-          error: 'session_id is required'
+          error:
+            'session_id is required'
         },
         400
       );
     }
 
     /*
-     * Кількість передаємо при перевірці статусу.
-     * Для нашого поточного тесту це 1.
+     * Frontend передасть quantity
+     * із збережених даних замовлення.
      *
-     * На frontend потім автоматично передамо
-     * фактичну кількість із калькулятора.
+     * Якщо NovaPay поверне count
+     * у paid-operation — нижче
+     * використаємо саме його.
      */
-    const quantity = Math.max(
-      1,
-      parseInt(requestData.quantity, 10) || 1
-    );
+    const requestedQuantity =
+      Math.max(
+        1,
+        Math.floor(
+          Number(
+            requestData.quantity || 1
+          )
+        )
+      );
 
     const API_BASE =
       NOVAPAY_ENV === 'production'
         ? 'https://api-ecom.novapay.ua'
         : 'https://api-qecom.novapay.ua';
 
+    // -------------------------
+    // NOVAPAY GET STATUS
+    // -------------------------
+
     const payload = {
-      merchant_id: MERCHANT_ID,
-      session_id: sessionId
+      merchant_id:
+        MERCHANT_ID,
+
+      session_id:
+        sessionId
     };
 
     const body =
@@ -133,10 +209,15 @@ export async function onRequestPost(context) {
     console.log(
       'NovaPay status request:',
       JSON.stringify({
-        environment: NOVAPAY_ENV,
-        merchantId: MERCHANT_ID,
+        environment:
+          NOVAPAY_ENV,
+
+        merchantId:
+          MERCHANT_ID,
+
         sessionId,
-        quantity
+
+        requestedQuantity
       })
     );
 
@@ -145,6 +226,7 @@ export async function onRequestPost(context) {
         `${API_BASE}/v1/get-status`,
         {
           method: 'POST',
+
           headers: {
             'Content-Type':
               'application/json',
@@ -170,7 +252,8 @@ export async function onRequestPost(context) {
         JSON.parse(responseText);
     } catch {
       result = {
-        raw: responseText
+        raw:
+          responseText
       };
     }
 
@@ -183,11 +266,17 @@ export async function onRequestPost(context) {
       return json(
         {
           success: false,
-          environment: NOVAPAY_ENV,
+
+          environment:
+            NOVAPAY_ENV,
+
           sessionId,
+
           novapay_status:
             response.status,
-          data: result
+
+          data:
+            result
         },
         response.status
       );
@@ -207,22 +296,32 @@ export async function onRequestPost(context) {
         operation =>
           String(
             operation.status || ''
-          ).toLowerCase() === 'paid'
+          )
+            .trim()
+            .toLowerCase() === 'paid'
       );
 
     /*
-     * Якщо платіж ще не paid —
-     * нічого в CRM не створюємо.
+     * Платіж ще не підтверджений —
+     * у CRM нічого не створюємо.
      */
     if (!paidOperation) {
       return json(
         {
           success: true,
+
           paid: false,
-          syncedToCrm: false,
-          environment: NOVAPAY_ENV,
+
+          syncedToCrm:
+            false,
+
+          environment:
+            NOVAPAY_ENV,
+
           sessionId,
-          data: result
+
+          data:
+            result
         },
         200
       );
@@ -236,6 +335,12 @@ export async function onRequestPost(context) {
       String(
         paidOperation.external_id || ''
       ).trim();
+
+    if (!externalId) {
+      throw new Error(
+        'NovaPay returned no external_id'
+      );
+    }
 
     const paidAmount =
       Number(
@@ -251,18 +356,47 @@ export async function onRequestPost(context) {
       );
     }
 
+    // -------------------------
+    // QUANTITY
+    // -------------------------
+
+    /*
+     * Якщо get-status повертає products,
+     * беремо count звідти.
+     *
+     * Інакше використовуємо quantity,
+     * який frontend зберіг перед redirect.
+     */
+    const operationProducts =
+      Array.isArray(
+        paidOperation.products
+      )
+        ? paidOperation.products
+        : [];
+
+    const operationQuantity =
+      Math.floor(
+        Number(
+          operationProducts?.[0]?.count || 0
+        )
+      );
+
+    const quantity =
+      Number.isFinite(
+        operationQuantity
+      ) &&
+      operationQuantity > 0
+        ? operationQuantity
+        : requestedQuantity;
+
+    // -------------------------
+    // CUSTOMER
+    // -------------------------
+
     const phone =
       String(
         result.client_phone || ''
       ).trim();
-
-    const name = [
-      result.client_first_name,
-      result.client_last_name
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .trim() || 'Клієнт NovaPay';
 
     if (!phone) {
       throw new Error(
@@ -270,11 +404,22 @@ export async function onRequestPost(context) {
       );
     }
 
+    const name =
+      [
+        result.client_first_name,
+        result.client_last_name
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .trim() ||
+      'Клієнт NovaPay';
+
     // -------------------------
-    // SERVER-SIDE PRICE CHECK
+    // SERVER PRICE CHECK
     // -------------------------
 
-    const BASE_PRICE = 200;
+    const BASE_PRICE =
+      200;
 
     const discount =
       getDiscount(quantity);
@@ -284,29 +429,37 @@ export async function onRequestPost(context) {
 
     const saving =
       Math.round(
-        baseTotal * discount / 100
+        baseTotal *
+        discount /
+        100
       );
 
     const expectedTotal =
       baseTotal - saving;
 
     /*
-     * Не дозволяємо створити CRM-замовлення,
-     * якщо оплачена сума не відповідає
-     * нашій серверній ціні.
+     * Ключова перевірка:
+     * CRM отримає замовлення
+     * тільки якщо NovaPay реально
+     * підтвердив правильну суму.
      */
     if (
       Math.abs(
-        paidAmount - expectedTotal
+        paidAmount -
+        expectedTotal
       ) > 0.01
     ) {
       console.error(
         'NovaPay paid amount mismatch:',
         JSON.stringify({
           sessionId,
+
           externalId,
+
           quantity,
+
           expectedTotal,
+
           paidAmount
         })
       );
@@ -314,10 +467,15 @@ export async function onRequestPost(context) {
       return json(
         {
           success: false,
+
           error:
             'Paid amount does not match order total',
+
           expectedTotal,
-          paidAmount
+
+          paidAmount,
+
+          quantity
         },
         409
       );
@@ -327,23 +485,37 @@ export async function onRequestPost(context) {
       'NovaPay payment confirmed:',
       JSON.stringify({
         sessionId,
+
         externalId,
+
         name,
+
         phone,
+
         quantity,
+
         discount,
+
         paidAmount
       })
     );
 
     // -------------------------
-    // SEND PAID ORDER TO LP-CRM
+    // LP-CRM
     // -------------------------
 
     const origin =
       new URL(
         context.request.url
       ).origin;
+
+    const paytype =
+      String(
+        result.paytype ||
+        result.payment_type ||
+        paidOperation.payment_type ||
+        ''
+      ).trim();
 
     const crmResponse =
       await fetch(
@@ -356,38 +528,44 @@ export async function onRequestPost(context) {
               'application/json'
           },
 
-          body: JSON.stringify({
-            name,
-            phone,
+          body:
+            JSON.stringify({
+              name,
 
-            quantity,
+              phone,
 
-            payment:
-              'online',
+              quantity,
 
-            paid:
-              true,
+              /*
+               * Дуже важливо:
+               * той самий external_id
+               * використовують status
+               * і callback.
+               */
+              orderId:
+                externalId,
 
-            paymentStatus:
-              'paid',
+              payment:
+                'online',
 
-            paymentProvider:
-              'NovaPay',
+              paid:
+                true,
 
-            novapaySessionId:
-              sessionId,
+              paymentStatus:
+                'paid',
 
-            novapayOrderId:
-              externalId,
+              paymentProvider:
+                'NovaPay',
 
-            novapayPaytype:
-              String(
-                result.paytype ||
-                result.payment_type ||
-                paidOperation.payment_type ||
-                ''
-              )
-          })
+              novapaySessionId:
+                sessionId,
+
+              novapayOrderId:
+                externalId,
+
+              novapayPaytype:
+                paytype
+            })
         }
       );
 
@@ -413,13 +591,72 @@ export async function onRequestPost(context) {
       JSON.stringify(crmData)
     );
 
+    // -------------------------
+    // CRM SUCCESS / DUPLICATE
+    // -------------------------
+
     if (
       !crmResponse.ok ||
       crmData.success !== true
     ) {
+      const crmMessage =
+        JSON.stringify(
+          crmData?.crm_response?.message ||
+          crmData?.message ||
+          crmData?.error ||
+          ''
+        );
+
+      /*
+       * Якщо callback уже створив
+       * це саме замовлення,
+       * status.js отримає duplicate.
+       *
+       * Це нормальна idempotent
+       * поведінка, а не помилка.
+       */
+      const duplicate =
+        crmMessage
+          .toLowerCase()
+          .includes('дубл');
+
+      if (duplicate) {
+        console.log(
+          'LP-CRM duplicate ignored:',
+          externalId
+        );
+
+        return json(
+          {
+            success: true,
+
+            paid: true,
+
+            syncedToCrm:
+              true,
+
+            duplicate:
+              true,
+
+            environment:
+              NOVAPAY_ENV,
+
+            sessionId,
+
+            orderId:
+              externalId,
+
+            amount:
+              paidAmount,
+
+            quantity
+          },
+          200
+        );
+      }
+
       throw new Error(
-        crmData?.error ||
-        crmData?.crm_response?.message ||
+        crmMessage ||
         'LP-CRM did not accept paid order'
       );
     }
@@ -434,7 +671,11 @@ export async function onRequestPost(context) {
 
         paid: true,
 
-        syncedToCrm: true,
+        syncedToCrm:
+          true,
+
+        duplicate:
+          false,
 
         environment:
           NOVAPAY_ENV,
@@ -467,6 +708,7 @@ export async function onRequestPost(context) {
     return json(
       {
         success: false,
+
         error:
           error?.message ||
           String(error)
@@ -474,20 +716,4 @@ export async function onRequestPost(context) {
       500
     );
   }
-}
-
-function json(
-  data,
-  status = 200
-) {
-  return new Response(
-    JSON.stringify(data),
-    {
-      status,
-      headers: {
-        'Content-Type':
-          'application/json; charset=utf-8'
-      }
-    }
-  );
 }
