@@ -47,8 +47,6 @@ async function createSignature(body, privateKeyPem) {
 }
 
 async function novapayRequest(url, data, privateKey) {
-  // ВАЖЛИВО: підписуємо саме той JSON-рядок,
-  // який потім відправляємо в body.
   const body = JSON.stringify(data);
 
   const signature = await createSignature(
@@ -102,6 +100,13 @@ function normalizePhone(phone) {
   return value;
 }
 
+function getDiscount(quantity) {
+  if (quantity >= 10) return 20;
+  if (quantity >= 5) return 16;
+  if (quantity >= 3) return 8;
+  return 0;
+}
+
 export async function onRequestPost(context) {
   try {
     const env = context.env;
@@ -138,6 +143,9 @@ export async function onRequestPost(context) {
     const phone =
       normalizePhone(requestData.phone);
 
+    const name =
+      String(requestData.name || '').trim();
+
     if (!phone) {
       return new Response(
         JSON.stringify({
@@ -153,25 +161,33 @@ export async function onRequestPost(context) {
       );
     }
 
-    /*
-     * ПЕРШИЙ ТЕСТ:
-     * передаємо amount із запиту,
-     * але якщо його немає — 1 грн.
-     *
-     * Після успішного тесту ми
-     * перенесемо розрахунок ціни
-     * на сервер і не будемо довіряти
-     * сумі з браузера.
-     */
-    const amount =
-      Number(requestData.amount || 1);
+    // -------------------------
+    // SERVER-SIDE PRICE CALC
+    // -------------------------
 
-    if (
-      !Number.isFinite(amount) ||
-      amount <= 0
-    ) {
-      throw new Error('Invalid amount');
-    }
+    const quantity =
+      Math.max(
+        1,
+        Math.floor(
+          Number(requestData.quantity || 1)
+        )
+      );
+
+    const price = 200;
+
+    const discount =
+      getDiscount(quantity);
+
+    const baseTotal =
+      quantity * price;
+
+    const saving =
+      Math.round(
+        baseTotal * discount / 100
+      );
+
+    const total =
+      baseTotal - saving;
 
     const origin =
       new URL(context.request.url).origin;
@@ -205,7 +221,14 @@ export async function onRequestPost(context) {
       JSON.stringify({
         environment: NOVAPAY_ENV,
         merchantId: String(MERCHANT_ID),
+        name,
         phone,
+        quantity,
+        price,
+        discount,
+        baseTotal,
+        saving,
+        total,
         callback:
           sessionData.callback_url
       })
@@ -259,9 +282,17 @@ export async function onRequestPost(context) {
 
       external_id: orderId,
 
-      amount: amount,
+      amount: total,
 
-      use_hold: false
+      use_hold: false,
+
+      products: [
+        {
+          description: 'SPALSADZ — 1 кг',
+          count: quantity,
+          price: price
+        }
+      ]
     };
 
     console.log(
@@ -270,7 +301,12 @@ export async function onRequestPost(context) {
         merchantId: String(MERCHANT_ID),
         sessionId,
         externalId: orderId,
-        amount
+        quantity,
+        price,
+        discount,
+        baseTotal,
+        saving,
+        total
       })
     );
 
@@ -286,19 +322,24 @@ export async function onRequestPost(context) {
       JSON.stringify(payment)
     );
 
-    /*
-     * Поки повертаємо всю відповідь,
-     * щоб точно побачити,
-     * як NovaPay називає payment URL
-     * у твоєму акаунті/API.
-     */
-
     return new Response(
       JSON.stringify({
         success: true,
         environment: NOVAPAY_ENV,
         orderId,
         sessionId,
+
+        order: {
+          name,
+          phone,
+          quantity,
+          price,
+          discount,
+          baseTotal,
+          saving,
+          total
+        },
+
         session,
         payment
       }),
