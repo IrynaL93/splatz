@@ -1,4 +1,4 @@
-function pemToArrayBuffer(pem) {
+function publicPemToArrayBuffer(pem) {
   const base64 = String(pem || '')
     .replace(/-----BEGIN PUBLIC KEY-----/g, '')
     .replace(/-----END PUBLIC KEY-----/g, '')
@@ -14,32 +14,58 @@ function pemToArrayBuffer(pem) {
   return bytes.buffer;
 }
 
-async function verifySignature(rawBody, signatureBase64, publicKeyPem) {
+async function verifySignature(
+  rawBody,
+  signatureBase64,
+  publicKeyPem
+) {
   if (!signatureBase64 || !publicKeyPem) {
     return false;
   }
 
-  const keyData = pemToArrayBuffer(publicKeyPem);
+  const keyData =
+    publicPemToArrayBuffer(publicKeyPem);
 
-  const publicKey = await crypto.subtle.importKey(
-    'spki',
-    keyData,
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: 'SHA-256'
-    },
-    false,
-    ['verify']
-  );
+  const publicKey =
+    await crypto.subtle.importKey(
+      'spki',
+      keyData,
+      {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: 'SHA-256'
+      },
+      false,
+      ['verify']
+    );
 
-  const signatureBinary = atob(signatureBase64);
-  const signatureBytes = new Uint8Array(signatureBinary.length);
+  let signatureBinary;
 
-  for (let i = 0; i < signatureBinary.length; i++) {
-    signatureBytes[i] = signatureBinary.charCodeAt(i);
+  try {
+    signatureBinary =
+      atob(
+        String(signatureBase64)
+          .replace(/\s+/g, '')
+      );
+  } catch {
+    return false;
   }
 
-  const data = new TextEncoder().encode(rawBody);
+  const signatureBytes =
+    new Uint8Array(
+      signatureBinary.length
+    );
+
+  for (
+    let i = 0;
+    i < signatureBinary.length;
+    i++
+  ) {
+    signatureBytes[i] =
+      signatureBinary.charCodeAt(i);
+  }
+
+  const data =
+    new TextEncoder().encode(rawBody);
 
   return crypto.subtle.verify(
     'RSASSA-PKCS1-v1_5',
@@ -50,51 +76,90 @@ async function verifySignature(rawBody, signatureBase64, publicKeyPem) {
 }
 
 function getDiscount(quantity) {
-  if (quantity >= 10) return 20;
-  if (quantity >= 5) return 16;
-  if (quantity >= 3) return 8;
+  if (quantity >= 10) {
+    return 20;
+  }
+
+  if (quantity >= 5) {
+    return 16;
+  }
+
+  if (quantity >= 3) {
+    return 8;
+  }
+
   return 0;
+}
+
+function json(
+  data,
+  status = 200
+) {
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+      headers: {
+        'Content-Type':
+          'application/json; charset=utf-8'
+      }
+    }
+  );
 }
 
 export async function onRequestPost(context) {
   try {
-    const request = context.request;
-    const env = context.env;
+    const request =
+      context.request;
+
+    const env =
+      context.env;
+
+    // -------------------------
+    // NOVAPAY PUBLIC KEY
+    // -------------------------
 
     /*
-     * ВАЖЛИВО:
-     * тут потрібен ПУБЛІЧНИЙ КЛЮЧ NOVAPAY
-     * для перевірки їхнього x-sign.
+     * Це саме public key NovaPay
+     * для перевірки callback x-sign.
      *
-     * Не публічний ключ із твоєї
-     * merchant RSA-пари.
+     * Preview -> test key NovaPay
+     * Production -> production key NovaPay
      */
-    const NOVAPAY_CALLBACK_PUBLIC_KEY =
-      env.NOVAPAY_CALLBACK_PUBLIC_KEY;
+    const CALLBACK_PUBLIC_KEY =
+      String(
+        env.NOVAPAY_CALLBACK_PUBLIC_KEY || ''
+      ).trim();
 
-    if (!NOVAPAY_CALLBACK_PUBLIC_KEY) {
+    if (!CALLBACK_PUBLIC_KEY) {
       throw new Error(
         'NOVAPAY_CALLBACK_PUBLIC_KEY is missing'
       );
     }
 
+    // -------------------------
+    // RAW BODY + SIGNATURE
+    // -------------------------
+
     /*
-     * Підпис перевіряємо по сирому body.
-     * Тому спочатку request.text(),
-     * а вже потім JSON.parse().
+     * Підпис перевіряється по
+     * оригінальному body.
+     *
+     * Тому JSON.parse робимо
+     * тільки після verifySignature().
      */
-    const rawBody = await request.text();
+    const rawBody =
+      await request.text();
 
     const xSign =
       request.headers.get('x-sign') ||
-      request.headers.get('X-Sign') ||
       '';
 
     const signatureValid =
       await verifySignature(
         rawBody,
         xSign,
-        NOVAPAY_CALLBACK_PUBLIC_KEY
+        CALLBACK_PUBLIC_KEY
       );
 
     if (!signatureValid) {
@@ -102,72 +167,86 @@ export async function onRequestPost(context) {
         'NovaPay callback: invalid signature'
       );
 
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Invalid NovaPay signature'
-        }),
+      return json(
         {
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+          success: false,
+          error:
+            'Invalid NovaPay signature'
+        },
+        401
       );
     }
+
+    // -------------------------
+    // PARSE JSON
+    // -------------------------
 
     let data;
 
     try {
-      data = JSON.parse(rawBody);
+      data =
+        JSON.parse(rawBody);
     } catch {
-      return new Response(
-        JSON.stringify({
+      return json(
+        {
           success: false,
           error: 'Invalid JSON'
-        }),
-        {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+        },
+        400
       );
     }
+
+    const status =
+      String(
+        data.status || ''
+      )
+        .trim()
+        .toLowerCase();
 
     console.log(
       'NovaPay callback:',
       JSON.stringify({
-        id: data.id,
-        status: data.status,
-        paytype: data.paytype,
-        phone: data.client_phone,
-        payments: data.payments
+        id:
+          data.id || '',
+
+        status,
+
+        paytype:
+          data.paytype || '',
+
+        phone:
+          data.client_phone || '',
+
+        payments:
+          data.payments || []
       })
     );
 
+    // -------------------------
+    // ONLY PAID
+    // -------------------------
+
     /*
-     * NovaPay може надсилати callback
-     * при різних змінах статусу.
+     * NovaPay може надсилати
+     * callback кілька разів при
+     * зміні статусу.
      *
-     * У CRM передаємо тільки
-     * ПОВНІСТЮ ОПЛАЧЕНЕ замовлення.
+     * До CRM відправляємо тільки paid.
      */
-    if (data.status !== 'paid') {
-      return new Response(
-        JSON.stringify({
+    if (status !== 'paid') {
+      return json(
+        {
           success: true,
           ignored: true,
-          status: data.status
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+          status
+        },
+        200
       );
     }
+
+    // -------------------------
+    // PAYMENT
+    // -------------------------
 
     const payments =
       Array.isArray(data.payments)
@@ -180,12 +259,19 @@ export async function onRequestPost(context) {
       );
     }
 
-    /*
-     * У нас одне замовлення SPALSADZ,
-     * але NovaPay повертає payments[]
-     * як масив.
-     */
-    const payment = payments[0];
+    const payment =
+      payments[0];
+
+    const externalId =
+      String(
+        payment.external_id || ''
+      ).trim();
+
+    if (!externalId) {
+      throw new Error(
+        'NovaPay callback has no external_id'
+      );
+    }
 
     const products =
       Array.isArray(payment.products)
@@ -195,37 +281,56 @@ export async function onRequestPost(context) {
     const product =
       products[0] || {};
 
-    const quantity =
-      Math.max(
-        1,
-        Number(product.count || 1)
+    // -------------------------
+    // QUANTITY
+    // -------------------------
+
+    const parsedQuantity =
+      Math.floor(
+        Number(
+          product.count || 1
+        )
       );
 
+    const quantity =
+      Number.isFinite(parsedQuantity) &&
+      parsedQuantity > 0
+        ? parsedQuantity
+        : 1;
+
+    // -------------------------
+    // SERVER PRICE CHECK
+    // -------------------------
+
     /*
-     * Наша базова ціна товару.
-     * Не беремо product.price як
-     * єдине джерело для калькуляції,
-     * бо фінальна сума приходить
-     * окремо в payment.amount.
+     * Базова ціна — наша серверна.
+     * product.price після знижки
+     * не використовуємо як джерело
+     * правил ціноутворення.
      */
-    const price = 200;
+    const BASE_PRICE =
+      200;
 
     const discount =
       getDiscount(quantity);
 
     const baseTotal =
-      quantity * price;
+      BASE_PRICE * quantity;
 
     const saving =
       Math.round(
-        baseTotal * discount / 100
+        baseTotal *
+        discount /
+        100
       );
 
-    const calculatedTotal =
+    const expectedTotal =
       baseTotal - saving;
 
     const paidTotal =
-      Number(payment.amount || 0);
+      Number(
+        payment.amount || 0
+      );
 
     if (
       !Number.isFinite(paidTotal) ||
@@ -237,29 +342,50 @@ export async function onRequestPost(context) {
     }
 
     /*
-     * Додаткова перевірка:
-     * оплачена сума повинна збігатися
-     * з нашим серверним розрахунком.
+     * У CRM відправляємо тільки
+     * замовлення, де фактично сплачена
+     * сума збігається з нашою ціною.
      */
     if (
-      Math.abs(paidTotal - calculatedTotal) > 0.01
+      Math.abs(
+        paidTotal -
+        expectedTotal
+      ) > 0.01
     ) {
       console.error(
         'NovaPay amount mismatch:',
         JSON.stringify({
+          externalId,
           quantity,
-          expected: calculatedTotal,
-          received: paidTotal
+          expected:
+            expectedTotal,
+          received:
+            paidTotal
         })
       );
 
-      throw new Error(
-        'NovaPay paid amount does not match order total'
+      return json(
+        {
+          success: false,
+          error:
+            'NovaPay paid amount does not match order total',
+
+          expectedTotal,
+
+          paidTotal
+        },
+        409
       );
     }
 
+    // -------------------------
+    // CUSTOMER
+    // -------------------------
+
     const phone =
-      String(data.client_phone || '').trim();
+      String(
+        data.client_phone || ''
+      ).trim();
 
     if (!phone) {
       throw new Error(
@@ -267,35 +393,48 @@ export async function onRequestPost(context) {
       );
     }
 
-    /*
-     * NovaPay Checkout може отримати ім'я
-     * вже на своїй сторінці оформлення.
-     */
-    const name = [
-      data.client_first_name,
-      data.client_last_name
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .trim() || 'Клієнт NovaPay';
-
-    const externalId =
-      String(
-        payment.external_id || ''
-      ).trim();
+    const name =
+      [
+        data.client_first_name,
+        data.client_last_name
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .trim() ||
+      'Клієнт NovaPay';
 
     const sessionId =
-      String(data.id || '').trim();
+      String(
+        data.id || ''
+      ).trim();
 
     const paytype =
-      String(data.paytype || '').trim();
+      String(
+        data.paytype || ''
+      ).trim();
 
-    /*
-     * Передаємо оплачений заказ
-     * у вже існуючий /api/order.
-     */
+    console.log(
+      'NovaPay payment confirmed:',
+      JSON.stringify({
+        externalId,
+        sessionId,
+        name,
+        phone,
+        quantity,
+        discount,
+        expectedTotal,
+        paidTotal
+      })
+    );
+
+    // -------------------------
+    // LP-CRM
+    // -------------------------
+
     const origin =
-      new URL(request.url).origin;
+      new URL(
+        request.url
+      ).origin;
 
     const crmResponse =
       await fetch(
@@ -308,60 +447,76 @@ export async function onRequestPost(context) {
               'application/json'
           },
 
-          body: JSON.stringify({
-            name,
-            phone,
+          body:
+            JSON.stringify({
+              name,
 
-            price: String(price),
+              phone,
 
-            country: 'UA',
+              quantity,
 
-            quantity,
+              /*
+               * Передаємо external_id
+               * NovaPay як наш стабільний
+               * ID онлайн-замовлення.
+               */
+              orderId:
+                externalId,
 
-            discount,
+              payment:
+                'online',
 
-            baseTotal,
+              paid:
+                true,
 
-            saving,
+              paymentStatus:
+                'paid',
 
-            total: paidTotal,
+              paymentProvider:
+                'NovaPay',
 
-            payment: 'online',
+              novapaySessionId:
+                sessionId,
 
-            paid: true,
+              novapayOrderId:
+                externalId,
 
-            paymentStatus: 'paid',
-
-            paymentProvider: 'NovaPay',
-
-            novapaySessionId: sessionId,
-
-            novapayOrderId: externalId,
-
-            novapayPaytype: paytype
-          })
+              novapayPaytype:
+                paytype
+            })
         }
       );
 
-    const crmData =
-      await crmResponse
-        .json()
-        .catch(() => ({}));
+    const crmResponseText =
+      await crmResponse.text();
+
+    let crmData;
+
+    try {
+      crmData =
+        JSON.parse(
+          crmResponseText
+        );
+    } catch {
+      crmData = {
+        raw:
+          crmResponseText
+      };
+    }
 
     console.log(
       'LP-CRM paid order response:',
       JSON.stringify(crmData)
     );
 
-    /*
-     * LP-CRM може відповісти "duplicate",
-     * якщо NovaPay повторив callback.
-     *
-     * У такому випадку НЕ треба
-     * змушувати NovaPay слати webhook
-     * ще 10 разів.
-     */
-    if (crmData.success !== true) {
+    // -------------------------
+    // CRM SUCCESS / DUPLICATE
+    // -------------------------
+
+    if (
+      !crmResponse.ok ||
+      crmData.success !== true
+    ) {
       const crmMessage =
         JSON.stringify(
           crmData?.crm_response?.message ||
@@ -370,6 +525,11 @@ export async function onRequestPost(context) {
           ''
         );
 
+      /*
+       * Callback може повторитися.
+       * Дубль уже створеного paid-order
+       * не вважаємо серверною помилкою.
+       */
       const duplicate =
         crmMessage
           .toLowerCase()
@@ -381,19 +541,18 @@ export async function onRequestPost(context) {
           externalId
         );
 
-        return new Response(
-          JSON.stringify({
+        return json(
+          {
             success: true,
             duplicate: true,
-            orderId: externalId
-          }),
-          {
-            status: 200,
-            headers: {
-              'Content-Type':
-                'application/json'
-            }
-          }
+            status: 'paid',
+            orderId:
+              externalId,
+            sessionId,
+            amount:
+              paidTotal
+          },
+          200
         );
       }
 
@@ -403,53 +562,55 @@ export async function onRequestPost(context) {
       );
     }
 
-    return new Response(
-      JSON.stringify({
+    // -------------------------
+    // SUCCESS
+    // -------------------------
+
+    return json(
+      {
         success: true,
 
-        status: 'paid',
+        status:
+          'paid',
 
-        orderId: externalId,
+        orderId:
+          externalId,
 
         sessionId,
 
-        amount: paidTotal,
+        amount:
+          paidTotal,
 
-        crm: true
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type':
-            'application/json'
-        }
-      }
+        crm:
+          true
+      },
+      200
     );
 
   } catch (error) {
+
     console.error(
       'NovaPay callback error:',
-      error.message
+      error?.stack ||
+      error?.message ||
+      String(error)
     );
 
     /*
-     * 500 потрібен навмисно:
-     * NovaPay повторить callback,
-     * якщо з нашого боку була
-     * тимчасова помилка.
+     * 500 залишаємо навмисно:
+     * якщо виникла тимчасова
+     * серверна помилка, callback
+     * не позначається успішним.
      */
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message
-      }),
+    return json(
       {
-        status: 500,
-        headers: {
-          'Content-Type':
-            'application/json'
-        }
-      }
+        success: false,
+
+        error:
+          error?.message ||
+          String(error)
+      },
+      500
     );
   }
 }
