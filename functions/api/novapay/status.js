@@ -47,6 +47,13 @@ async function createSignature(body, privateKeyPem) {
   return btoa(binary);
 }
 
+function getDiscount(quantity) {
+  if (quantity >= 10) return 20;
+  if (quantity >= 5) return 16;
+  if (quantity >= 3) return 8;
+  return 0;
+}
+
 export async function onRequestPost(context) {
   try {
     const env = context.env;
@@ -92,6 +99,18 @@ export async function onRequestPost(context) {
       );
     }
 
+    /*
+     * Кількість передаємо при перевірці статусу.
+     * Для нашого поточного тесту це 1.
+     *
+     * На frontend потім автоматично передамо
+     * фактичну кількість із калькулятора.
+     */
+    const quantity = Math.max(
+      1,
+      parseInt(requestData.quantity, 10) || 1
+    );
+
     const API_BASE =
       NOVAPAY_ENV === 'production'
         ? 'https://api-ecom.novapay.ua'
@@ -116,7 +135,8 @@ export async function onRequestPost(context) {
       JSON.stringify({
         environment: NOVAPAY_ENV,
         merchantId: MERCHANT_ID,
-        sessionId
+        sessionId,
+        quantity
       })
     );
 
@@ -159,24 +179,287 @@ export async function onRequestPost(context) {
       JSON.stringify(result)
     );
 
+    if (!response.ok) {
+      return json(
+        {
+          success: false,
+          environment: NOVAPAY_ENV,
+          sessionId,
+          novapay_status:
+            response.status,
+          data: result
+        },
+        response.status
+      );
+    }
+
+    // -------------------------
+    // FIND PAID OPERATION
+    // -------------------------
+
+    const operations =
+      Array.isArray(result.operations)
+        ? result.operations
+        : [];
+
+    const paidOperation =
+      operations.find(
+        operation =>
+          String(
+            operation.status || ''
+          ).toLowerCase() === 'paid'
+      );
+
+    /*
+     * Якщо платіж ще не paid —
+     * нічого в CRM не створюємо.
+     */
+    if (!paidOperation) {
+      return json(
+        {
+          success: true,
+          paid: false,
+          syncedToCrm: false,
+          environment: NOVAPAY_ENV,
+          sessionId,
+          data: result
+        },
+        200
+      );
+    }
+
+    // -------------------------
+    // PAYMENT DATA
+    // -------------------------
+
+    const externalId =
+      String(
+        paidOperation.external_id || ''
+      ).trim();
+
+    const paidAmount =
+      Number(
+        paidOperation.amount || 0
+      );
+
+    if (
+      !Number.isFinite(paidAmount) ||
+      paidAmount <= 0
+    ) {
+      throw new Error(
+        'NovaPay returned invalid paid amount'
+      );
+    }
+
+    const phone =
+      String(
+        result.client_phone || ''
+      ).trim();
+
+    const name = [
+      result.client_first_name,
+      result.client_last_name
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .trim() || 'Клієнт NovaPay';
+
+    if (!phone) {
+      throw new Error(
+        'NovaPay did not return client_phone'
+      );
+    }
+
+    // -------------------------
+    // SERVER-SIDE PRICE CHECK
+    // -------------------------
+
+    const BASE_PRICE = 200;
+
+    const discount =
+      getDiscount(quantity);
+
+    const baseTotal =
+      BASE_PRICE * quantity;
+
+    const saving =
+      Math.round(
+        baseTotal * discount / 100
+      );
+
+    const expectedTotal =
+      baseTotal - saving;
+
+    /*
+     * Не дозволяємо створити CRM-замовлення,
+     * якщо оплачена сума не відповідає
+     * нашій серверній ціні.
+     */
+    if (
+      Math.abs(
+        paidAmount - expectedTotal
+      ) > 0.01
+    ) {
+      console.error(
+        'NovaPay paid amount mismatch:',
+        JSON.stringify({
+          sessionId,
+          externalId,
+          quantity,
+          expectedTotal,
+          paidAmount
+        })
+      );
+
+      return json(
+        {
+          success: false,
+          error:
+            'Paid amount does not match order total',
+          expectedTotal,
+          paidAmount
+        },
+        409
+      );
+    }
+
+    console.log(
+      'NovaPay payment confirmed:',
+      JSON.stringify({
+        sessionId,
+        externalId,
+        name,
+        phone,
+        quantity,
+        discount,
+        paidAmount
+      })
+    );
+
+    // -------------------------
+    // SEND PAID ORDER TO LP-CRM
+    // -------------------------
+
+    const origin =
+      new URL(
+        context.request.url
+      ).origin;
+
+    const crmResponse =
+      await fetch(
+        `${origin}/api/order`,
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json'
+          },
+
+          body: JSON.stringify({
+            name,
+            phone,
+
+            quantity,
+
+            payment:
+              'online',
+
+            paid:
+              true,
+
+            paymentStatus:
+              'paid',
+
+            paymentProvider:
+              'NovaPay',
+
+            novapaySessionId:
+              sessionId,
+
+            novapayOrderId:
+              externalId,
+
+            novapayPaytype:
+              String(
+                result.paytype ||
+                result.payment_type ||
+                paidOperation.payment_type ||
+                ''
+              )
+          })
+        }
+      );
+
+    const crmResponseText =
+      await crmResponse.text();
+
+    let crmData;
+
+    try {
+      crmData =
+        JSON.parse(
+          crmResponseText
+        );
+    } catch {
+      crmData = {
+        raw:
+          crmResponseText
+      };
+    }
+
+    console.log(
+      'LP-CRM paid order response:',
+      JSON.stringify(crmData)
+    );
+
+    if (
+      !crmResponse.ok ||
+      crmData.success !== true
+    ) {
+      throw new Error(
+        crmData?.error ||
+        crmData?.crm_response?.message ||
+        'LP-CRM did not accept paid order'
+      );
+    }
+
+    // -------------------------
+    // SUCCESS
+    // -------------------------
+
     return json(
       {
-        success: response.ok,
-        environment: NOVAPAY_ENV,
+        success: true,
+
+        paid: true,
+
+        syncedToCrm: true,
+
+        environment:
+          NOVAPAY_ENV,
+
         sessionId,
-        novapay_status:
-          response.status,
-        data: result
+
+        orderId:
+          externalId,
+
+        amount:
+          paidAmount,
+
+        quantity,
+
+        crm:
+          crmData
       },
-      response.ok
-        ? 200
-        : response.status
+      200
     );
 
   } catch (error) {
 
     console.error(
       'NovaPay status error:',
+      error?.stack ||
       error?.message ||
       String(error)
     );
