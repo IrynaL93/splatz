@@ -180,11 +180,18 @@ export async function onRequestPost(context) {
       );
 
     // LP-CRM internal order ID.
-    const orderId =
-      `${Date.now()}${Math.floor(
-        10000 + Math.random() * 90000
-      )}`;
+    const requestedOrderId =
+  String(
+    requestData.orderId ||
+    requestData.novapayOrderId ||
+    ''
+  ).trim();
 
+const orderId =
+  requestedOrderId ||
+  `${Date.now()}${Math.floor(
+    10000 + Math.random() * 90000
+  )}`;
     // -------------------------
     // COMMENT
     // -------------------------
