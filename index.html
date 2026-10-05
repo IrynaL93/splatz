@@ -964,26 +964,91 @@ input[type="file"][data-v-5739d392] { display: none; }
  .ref-step img{width:90px;height:78px}
 }
 </style>
+
+<style>
+/* Visible landing layer matched to the client's LP-MOBI reference.
+   Payment/CRM/discount scripts below this block are intentionally untouched. */
+.ref-page{width:480px;max-width:100%;margin:0 auto;background:#fff;color:#000;font-family:Montserrat,Arial,sans-serif;overflow:hidden}
+.ref-page *{box-sizing:border-box}
+.ref-heading{padding:24px 18px 22px;text-align:center;background:#fff}
+.ref-heading .line1{display:block;font-size:24px;line-height:1.32;font-weight:700;color:#000}
+.ref-heading .line2{display:block;margin-top:8px;font-size:18px;line-height:1.25;font-weight:500;color:#28324e}
+.ref-img{display:block;width:100%;height:auto}
+.ref-square{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.ref-bullets{display:grid;grid-template-columns:repeat(3,1fr);background:#39814d;color:#fff;padding:18px 14px;gap:8px}
+.ref-bullet{display:grid;grid-template-columns:28px 1fr;align-items:center;gap:8px;min-width:0;font-size:14px;font-weight:700;line-height:1.25}
+.ref-shield{width:24px;height:28px;border:2px solid rgba(255,255,255,.9);border-radius:9px 9px 11px 11px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900}
+.ref-price{display:flex;min-height:102px;background:#fff;overflow:hidden}
+.ref-price>div{width:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative}
+.ref-price p{margin:0;font-size:18px;line-height:1.3}
+.ref-price strong{font-size:31px;line-height:1.2}
+.ref-price-old strong{text-decoration:line-through}
+.ref-price-new{background:#000;color:#fff}
+.ref-price-new:before{content:"";position:absolute;left:-42px;top:0;border-right:42px solid #000;border-top:102px solid transparent}
+.ref-form{padding:35px 40px 28px;text-align:center;background:#fff}
+.ref-form h2{margin:0 0 24px;font-size:24px;line-height:1.25}
+.ref-form .form-copy{font-size:17px;line-height:1.55;margin-bottom:24px}
+.ref-fields{display:flex;flex-direction:column;gap:10px;margin-bottom:15px}
+.ref-fields input{width:100%;border:1px solid #c9c9c9;border-radius:8px;padding:18px 18px;font:500 16px/1.2 Montserrat,Arial,sans-serif}
+.ref-buy{width:100%;border:0;border-radius:8px;padding:22px 12px;background:linear-gradient(0deg,#1c681a -2.9%,#3c9a46 27.13%,#38c546 55.63%,#3c9a46 81.83%,#1c681a 111.33%);color:#fff;font:800 20px/1 Montserrat,Arial,sans-serif;cursor:pointer}
+.ref-h2{padding:28px 24px 18px;text-align:center;font-size:28px;font-weight:700;line-height:1.35;background:#fff}
+.ref-green{color:#61bd6d}
+.ref-text{padding:18px 30px 26px;text-align:center;font-size:18px;line-height:1.55;background:#fff}
+.ref-text p{margin:0}
+.ref-steps{padding:25px 24px;background:#fff}
+.ref-step{display:grid;grid-template-columns:110px 1fr;gap:16px;align-items:center;margin:12px 0;padding:12px;background:#f5f5f5}
+.ref-step img{width:110px;height:88px;object-fit:cover}
+.ref-step p{margin:0;font-size:16px;line-height:1.4}
+.ref-cta-copy{padding:16px 30px 24px;text-align:center;font-size:17px;line-height:1.55}
+.ref-cta-wrap{padding:0 40px 30px}
+.ref-reviews-title{padding:28px 20px 20px;text-align:center;font-size:28px;font-weight:700}
+.ref-review{display:block;width:100%;height:auto}
+.ref-payment{padding:18px 20px;text-align:center}
+.ref-payment-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.ref-payment-sub{font-size:13px;color:#777}
+.ref-payment-logos{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:10px}
+.ref-payment-logos img{height:34px;width:104px;object-fit:contain}
+.ref-policy{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 20px 25px;font-size:14px}
+.ref-policy a{color:#000;text-decoration:underline}
+@media(max-width:500px){
+ .ref-page{width:100%}
+ .ref-heading{padding:22px 16px}
+ .ref-heading .line1{font-size:24px}
+ .ref-heading .line2{font-size:18px}
+ .ref-bullets{padding:16px 10px;gap:4px}
+ .ref-bullet{grid-template-columns:24px 1fr;font-size:12px;gap:6px}
+ .ref-shield{width:21px;height:25px;font-size:12px}
+ .ref-price p{font-size:16px}
+ .ref-price strong{font-size:28px}
+ .ref-form{padding:30px 24px 24px}
+ .ref-text{padding-left:24px;padding-right:24px}
+ .ref-step{grid-template-columns:90px 1fr}
+ .ref-step img{width:90px;height:74px}
+}
+</style>
 <div id="modular">
   <div class="ref-page">
-    <div class="ref-hero">Засіб для легкого<br>очищення — від смоли,<br>сажі та нагару У КОТЛІ /<br>ПІЧЦІ / ГРУБІ / КАМІНІ ТА<br>ДИМОХОДІ</div>
+    <div class="ref-heading">
+      <span class="line1">Засіб для легкого очищення - від<br>смоли, сажі та нагару</span>
+      <span class="line2">У КОТЛІ / ПІЧЦІ / ГРУБІ / КАМІНІ ТА ДИМОХОДІ</span>
+    </div>
 
-    <div class="ref-photo-wrap"><img class="ref-photo" src="asset_16.png" alt="SPALSADZ"></div>
+    <img class="ref-img" src="asset_16.png" alt="SPALSADZ">
 
     <div class="ref-bullets">
-      <div class="ref-bullet">100% оригінальна продукція</div>
-      <div class="ref-bullet">Виробник Польща 🇵🇱</div>
-      <div class="ref-bullet">Оплата при отриманні</div>
+      <div class="ref-bullet"><span class="ref-shield">✓</span><span>100%<br>оригінальна<br>продукція</span></div>
+      <div class="ref-bullet"><span class="ref-shield">✓</span><span>Виробник<br>Польща 🇮🇩</span></div>
+      <div class="ref-bullet"><span class="ref-shield">✓</span><span>Оплата при<br>отриманні</span></div>
     </div>
 
     <div class="ref-price">
-      <div class="old"><p>Стара ціна:</p><strong>287 грн</strong></div>
-      <div class="new"><p>Акційна ціна:</p><strong>200 грн</strong></div>
+      <div class="ref-price-old"><p>Стара ціна:</p><strong>250 грн</strong></div>
+      <div class="ref-price-new"><p>Акційна ціна:</p><strong>200 грн</strong></div>
     </div>
 
     <form class="ref-form" id="1293370526_form">
       <h2>Хочете ціну менше 200 грн?</h2>
-      <div class="steps">1. Вкажіть ваше ім’я та номер телефону<br>2. Натисніть «Купити SPALSADZ»<br>3. Виберіть кількість та спосіб оплати<br><br>Після цього з вами зв’яжеться менеджер та підтвердить замовлення 🤝</div>
+      <div class="form-copy">1. Вкажіть ваше ім’я та номер телефону<br>2. Натисніть «Купити SPALSADZ»<br>3. Виберіть кількість, та спосіб оплати<br><br>Після цього з вами звяжеться менеджер та підтвердить замовлення🤝</div>
       <div class="ref-fields">
         <input name="name" type="text" placeholder="Введіть ваше ім'я" required>
         <input name="phone" type="tel" placeholder="Введіть телефон" required>
@@ -991,96 +1056,72 @@ input[type="file"][data-v-5739d392] { display: none; }
       <button class="ref-buy" form="1293370526_form" type="submit">КУПИТИ SPALSADZ</button>
     </form>
 
-    <section class="ref-section">
-      <h2>Що таке <span class="green">Spalsadz</span> 👇</h2>
-      <p>Spalsadz — це ефективний засіб, який згорає разом із твердим паливом. Він перешкоджає утворенню смоли та сажі в котлах, печах, грубках, камінах і димоходах, допомагаючи підтримувати їх у чистоті весь опалювальний сезон.</p>
-    </section>
+    <div class="ref-h2">Що таке <span class="ref-green">Spalsadz</span>👇</div>
+    <div class="ref-text"><p>Spalsadz — це ефективний засіб, який згорає разом із твердим паливом. Він перешкоджає утворенню смоли та сажі в котлах, печах, грубках, камінах і димоходах, допомагаючи підтримувати їх у чистоті весь опалювальний сезон.</p></div>
 
-    <img class="ref-photo" src="asset_15.jpg" alt="Загоряння сажі в димоході">
+    <img class="ref-img" src="asset_15.jpg" alt="">
+    <div class="ref-text"><p>Так виглядає котел після одного опалювального сезону☝️<br><br>Смола та сажа руйнують котли, печі, груби й каміни. У котлах вони викликають корозію металу, через що обладнання може зламатися вже за декілька років.<br>У печах і грубках з’являються мікротріщини, через які поширюється чадний газ.</p></div>
 
-    <section class="ref-section">
-      <p><strong>Так виглядає котел після одного опалювального сезону ☝️</strong><br><br>Смола та сажа руйнують котли, печі, груби й каміни. У котлах вони викликають корозію металу, через що обладнання може зламатися вже за декілька років. У печах і грубках з’являються мікротріщини, через які поширюється чадний газ.</p>
-    </section>
+    <img class="ref-img" src="asset_14.png" alt="">
+    <div class="ref-text"><p>Шар смоли та сажі товщиною декілька міліметрів на стінках котла, грубки, печі чи каміна призводить до втрати тепла близько 20%<br>Це тепло просто виходить у димохід.</p></div>
 
-    <img class="ref-photo" src="asset_14.png" alt="Наслідки забруднення димоходу">
+    <div class="ref-h2">Для чого використовують засіб <span class="ref-green">Spalsadz</span>👇</div>
+    <img class="ref-img" src="asset_13.png" alt="">
+    <div class="ref-text"><p>- Якщо котел, димохід, камін, грубка або піч тривалий час не очищались, Spalsadz допоможе видалити накопичені відкладення.<br>- Засіб висушує та кристалізує застарілу смолу й сажу, чим забезпечує їх повне вигорання.<br>- Регулярне використання Spalsadz забезпечує чистоту обладнання протягом опалювального сезону та подовжує термін його служби.</p></div>
 
-    <section class="ref-section">
-      <p><strong>Знижує тепловіддачу до 20%</strong><br><br>Шар смоли та сажі товщиною декілька міліметрів на стінках котла, грубки, печі чи каміна призводить до втрати тепла близько 20%. Це тепло просто виходить у димохід.</p>
-    </section>
+    <img class="ref-img" src="asset_12.jpg" alt="">
+    <div class="ref-text"><p>Spalsadz не шкодить здоров'ю і не містить шкідливих речовин.<br>Ми гарантуємо 100% результат, якщо використати засіб згідно з інструкцією.</p></div>
 
-    <section class="ref-section">
-      <h2>Для чого використовують засіб <span class="green">Spalsadz</span> 👇</h2>
-    </section>
-
-    <img class="ref-photo" src="asset_13.png" alt="Наслідки сажі">
-
-    <section class="ref-section ref-text-list">
-      <p>— Якщо котел, димохід, камін, грубка або піч тривалий час не очищались, Spalsadz допоможе видалити накопичені відкладення.</p>
-      <p>— Засіб висушує та кристалізує застарілу смолу й сажу, чим забезпечує їх повне вигорання.</p>
-      <p>— Регулярне використання Spalsadz забезпечує чистоту обладнання протягом опалювального сезону та подовжує термін його служби.</p>
-    </section>
-
-    <img class="ref-photo" src="asset_12.jpg" alt="Очищення димоходу">
-
-    <section class="ref-section">
-      <p>Spalsadz не шкодить здоров'ю і не містить шкідливих речовин. Ми гарантуємо 100% результат, якщо використати засіб згідно з інструкцією.</p>
-    </section>
-
-    <section class="ref-instruction">
-      <h2>Як користуватися засобом 👇</h2>
+    <div class="ref-steps">
       <div class="ref-step"><img src="asset_11.png" alt=""><p><strong>1.</strong> Розпаліть котел, піч, грубу чи камін. Дочекайтеся, поки паливо добре розгориться.</p></div>
       <div class="ref-step"><img src="asset_10.jpg" alt=""><p><strong>2.</strong> Додайте 2 столові ложки Spalsadz. Висипте засіб безпосередньо у вогонь.</p></div>
-      <div class="ref-step"><img src="asset_9.png" alt=""><p><strong>3.</strong> Повторюйте 1 раз на день. Використовуйте засіб щодня для підтримання ефективної роботи опалювальної системи.</p></div>
-    </section>
+      <div class="ref-step"><img src="asset_9.png" alt=""><p><strong>3.</strong> Повторюйте 1 раз на день.<br>Використовуйте засіб щодня для підтримання ефективної роботи опалювальної системи.</p></div>
+    </div>
 
-    <section class="ref-section">
-      <p>Ми дбаємо про наших клієнтів. Зробіть перше замовлення та отримайте статус постійного клієнта. Усі наступні замовлення ви зможете оформлювати з максимальною знижкою.</p>
-    </section>
+    <div class="ref-text"><p>Ми дбаємо про наших клієнтів. Зробіть перше замовлення та отримайте статус постійного клієнта. Усі наступні замовлення ви зможете оформлювати з максимальною знижкою.</p></div>
 
-    <img class="ref-photo" src="asset_8.png" alt="SPALSADZ — результат використання">
+    <img class="ref-img" src="asset_8.png" alt="">
 
     <div class="ref-bullets">
-      <div class="ref-bullet">100% оригінальна продукція</div>
-      <div class="ref-bullet">Виробник Польща 🇵🇱</div>
-      <div class="ref-bullet">Оплата при отриманні</div>
+      <div class="ref-bullet"><span class="ref-shield">✓</span><span>100%<br>оригінальна<br>продукція</span></div>
+      <div class="ref-bullet"><span class="ref-shield">✓</span><span>Виробник<br>Польща 🇮🇩</span></div>
+      <div class="ref-bullet"><span class="ref-shield">✓</span><span>Оплата при<br>отриманні</span></div>
     </div>
 
     <div class="ref-price">
-      <div class="old"><p>Стара ціна:</p><strong>287 грн</strong></div>
-      <div class="new"><p>Акційна ціна:</p><strong>200 грн</strong></div>
+      <div class="ref-price-old"><p>Стара ціна:</p><strong>250 грн</strong></div>
+      <div class="ref-price-new"><p>Акційна ціна:</p><strong>200 грн</strong></div>
     </div>
 
-    <section class="ref-section">
-      <h2>Хочете ціну менше 200 грн?</h2>
-      <p>1. Натисніть «Купити SPALSADZ»<br>2. Виберіть кількість та спосіб оплати<br>3. Вкажіть ваше ім’я та номер телефону<br><br>Після цього з вами зв’яжеться менеджер та підтвердить замовлення 🤝</p>
-    </section>
-    <div style="padding:0 34px 24px"><button type="button" class="ref-buy">КУПИТИ SPALSADZ</button></div>
+    <div class="ref-h2">Хочете ціну менше 200 грн?</div>
+    <div class="ref-cta-copy">1. Натисніть «Купити SPALSADZ»<br>2. Виберіть кількість, та спосіб оплати<br>3. Вкажіть ваше ім’я та номер телефону<br><br>Після цього з вами звяжеться менеджер та підтвердить замовлення🤝</div>
+    <div class="ref-cta-wrap"><button type="button" class="ref-buy">КУПИТИ SPALSADZ</button></div>
 
-    <div class="ref-reviews-title">Відгуки наших <span class="green">клієнтів</span></div>
+    <div class="ref-reviews-title">Відгуки наших <span class="ref-green">клієнтів</span></div>
     <img class="ref-review" src="asset_6.png" alt="Відгук клієнта">
     <img class="ref-review" src="asset_5.png" alt="Відгук клієнта">
     <img class="ref-review" src="asset_4.png" alt="Відгук клієнта">
     <img class="ref-review" src="asset_3.png" alt="Відгук клієнта">
     <img class="ref-review" src="asset_2.png" alt="Відгук клієнта">
     <img class="ref-review" src="asset_1.png" alt="Відгук клієнта">
-    <img class="ref-photo" src="asset_0.png" alt="SPALSADZ">
+    <img class="ref-img" src="asset_0.png" alt="SPALSADZ">
 
     <div class="ref-bullets">
-      <div class="ref-bullet">100% оригінальна продукція</div>
-      <div class="ref-bullet">Виробник Польща 🇵🇱</div>
-      <div class="ref-bullet">Оплата при отриманні</div>
+      <div class="ref-bullet"><span class="ref-shield">✓</span><span>100%<br>оригінальна<br>продукція</span></div>
+      <div class="ref-bullet"><span class="ref-shield">✓</span><span>Виробник<br>Польща 🇮🇩</span></div>
+      <div class="ref-bullet"><span class="ref-shield">✓</span><span>Оплата при<br>отриманні</span></div>
     </div>
 
     <div class="ref-price">
-      <div class="old"><p>Стара ціна:</p><strong>287 грн</strong></div>
-      <div class="new"><p>Акційна ціна:</p><strong>200 грн</strong></div>
+      <div class="ref-price-old"><p>Стара ціна:</p><strong>250 грн</strong></div>
+      <div class="ref-price-new"><p>Акційна ціна:</p><strong>200 грн</strong></div>
     </div>
 
     <form class="ref-form" id="317177729_form">
       <h2>Хочете ціну менше 200 грн?</h2>
-      <div class="steps">1. Вкажіть ваше ім’я та номер телефону<br>2. Натисніть «Купити SPALSADZ»<br>3. Виберіть кількість та спосіб оплати<br><br>Після цього з вами зв’яжеться менеджер та підтвердить замовлення 🤝</div>
+      <div class="form-copy">1. Вкажіть ваше ім’я та номер телефону<br>2. Натисніть «Купити SPALSADZ»<br>3. Виберіть кількість, та спосіб оплати<br><br>Після цього з вами звяжеться менеджер та підтвердить замовлення🤝</div>
       <div class="ref-fields">
-        <input name="name" type="text" placeholder="Введіть ваше ПІБ" required>
+        <input name="name" type="text" placeholder="Введіть ваше ім'я" required>
         <input name="phone" type="tel" placeholder="Введіть телефон" required>
       </div>
       <button class="ref-buy" form="317177729_form" type="submit">КУПИТИ SPALSADZ</button>
@@ -1088,14 +1129,10 @@ input[type="file"][data-v-5739d392] { display: none; }
 
     <div class="ref-payment" aria-label="Підтримувані платіжні системи">
       <div class="ref-payment-title">Безпечна онлайн-оплата</div>
-      <div style="font-size:13px;color:#777">Оплата карткою через NovaPay.</div>
+      <div class="ref-payment-sub">Оплата карткою через NovaPay.</div>
       <div class="ref-payment-logos"><img src="visa.svg" alt="Visa"><img src="mastercard.svg" alt="Mastercard"></div>
     </div>
-
-    <div class="ref-policy">
-      <a href="/privacy-policy.html">Політика конфіденційності</a>
-      <a href="/terms-of-use.html">Угода користувача</a>
-    </div>
+    <div class="ref-policy"><a href="/privacy-policy.html">Політика конфіденційності</a><a href="/terms-of-use.html">Угода користувача</a></div>
   </div>
 </div>
 
